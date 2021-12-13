@@ -21,4 +21,5 @@ RUN apk --no-cache add \
         # confulence投入に必要なモジュール
         coreutils \
         jq \
+        yq \
         sed
