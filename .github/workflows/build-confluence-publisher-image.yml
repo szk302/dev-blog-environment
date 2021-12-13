@@ -1,0 +1,48 @@
+name: Build confluence publisher image
+
+on:
+  workflow_dispatch: 
+    inputs:
+      pandoc_version:
+        description: 'Pandoc version'
+        required: false
+        default: '2.16.2'
+      asciidoctor_version:
+        description: 'Asciidoctor version'
+        required: false
+        default: '1.14.0'
+  push:
+    branches: [ main ]
+    paths:
+      - 'docker-images/pandoc/Dockerfile'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docker-images/pandoc/Dockerfile'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }} # - must be in GitHub Secrets!
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker-images/pandoc/Dockerfile
+          push: true
+          tags: "ghcr.io/szk302/dev-blog-builder:pandoc-${{ github.event.inputs.pandoc_version }}_asciidoctor-${{ github.event.inputs.asciidoctor_version }}"
+          build-args: |
+            PANDOC_VERSION=${{ github.event.inputs.pandoc_version }}
+            ASCIIDOCTOR_VERSION=${{ github.event.inputs.asciidoctor_version }}
