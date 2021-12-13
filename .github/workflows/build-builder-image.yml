@@ -1,0 +1,48 @@
+name: Build blog builder image
+
+on:
+  workflow_dispatch: 
+    inputs:
+      hugo_version:
+        description: 'Hugo version'
+        required: false
+        default: '0.80.0'
+      asciidoctor_version:
+        description: 'Asciidoctor version'
+        required: false
+        default: '1.14.0'
+  push:
+    branches: [ main ]
+    paths:
+      - 'docker-images/hugo/Dockerfile'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docker-images/hugo/Dockerfile'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }} # - must be in GitHub Secrets!
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker-images/hugo/Dockerfile
+          push: true
+          tags: "ghcr.io/szk302/dev-blog-builder:hugo-${{ github.event.inputs.hugo_version }}_asciidoctor-${{ github.event.inputs.asciidoctor_version }}"
+          build-args: |
+            HUGO_VERSION=${{ github.event.inputs.hugo_version }}
+            ASCIIDOCTOR_VERSION=${{ github.event.inputs.asciidoctor_version }}
