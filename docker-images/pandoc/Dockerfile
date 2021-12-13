@@ -20,4 +20,5 @@ RUN apk --no-cache add \
         lua5.3-lpeg \
         # confulence投入に必要なモジュール
         coreutils \
-        jq
+        jq \
+        sed
